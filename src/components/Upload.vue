@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { message } from "@tauri-apps/api/dialog";
 import { writeBinaryFile, BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
@@ -16,9 +16,10 @@ let active = ref(true);
 let zhanbi = ref([]);
 let shouyi = ref([]);
 
+const keyword = ref("");
+
 let activeChart = ref("");
 
-const allManagers = ref([]);
 let dataUrls = ref([]);
 
 const file1 = ref(null);
@@ -29,6 +30,17 @@ function changeMana(name) {
   active.value = name;
   genUserChart(name);
 }
+
+// 搜索用户
+function search() {}
+
+const allManagers = computed(() => {
+  if (keyword.value) {
+    return Object.keys(zhanbi.value).filter((i) => i.indexOf(keyword.value));
+  } else {
+    return Object.keys(zhanbi.value);
+  }
+});
 
 async function handleFileChange(type) {
   const file = type == "zb" ? file1.value : file2.value;
@@ -53,8 +65,6 @@ async function genChart() {
   const sheets2 = xlsx.parse(contents2);
   zhanbi.value = getData(sheets);
   shouyi.value = getData(sheets2);
-
-  allManagers.value = Object.keys(zhanbi.value);
 }
 
 function genUserChart(key) {
@@ -297,6 +307,11 @@ function renderChart(data1, data2, name) {
     </form>
     <section class="row">
       <div class="col col-3">
+        <q-input rounded outlined v-model="keyword" class="q-mb-md" label="搜索">
+          <template v-slot:append>
+            <q-icon name="search" class="cursor-pointer" @click="search"></q-icon>
+          </template>
+        </q-input>
         <q-list bordered separator>
           <q-virtual-scroll style="max-height: 300px" :items="allManagers" separator v-slot="{ item, index }">
             <q-item :key="index" clickable v-ripple :active="active == item" active-class="bg-teal-1 text-grey-8" @click="changeMana(item)">
