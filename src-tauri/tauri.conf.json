@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "test",
+    "productName": "Tool",
     "version": "0.0.0"
   },
   "tauri": {
@@ -27,14 +27,41 @@
       },
       "fs": {
         "all": true,
-        "scope": ["$DESKTOP/*", "$APPCACHE/*", "$APPLOCALDATA/*"]
+        "scope": [
+          "$AUDIO/**/*",
+          "$CACHE/**/*",
+          "$CONFIG/**/*",
+          "$DATA/**/*",
+          "$LOCALDATA/**/*",
+          "$DESKTOP/**/*",
+          "$DOCUMENT/**/*",
+          "$DOWNLOAD/**/*",
+          "$HOME/**/*",
+          "$PICTURE/**/*",
+          "$PUBLIC/**/*",
+          "$RUNTIME/**/*",
+          "$TEMPLATE/**/*",
+          "$VIDEO/**/*",
+          "$RESOURCE/**/*",
+          "$APP/**/*",
+          "$LOG/**/*",
+          "$TEMP/**/*",
+          "$APPCONFIG/**/*",
+          "$APPDATA/**/*",
+          "$APPLOCALDATA/**/*",
+          "$APPCACHE/**/*",
+          "$APPLOG/**/*"
+        ]
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
       "active": true,
       "targets": "all",
       "identifier": "com.hhz",
-      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+      "icon": ["icons/icon32.png", "icons/icon128.png"],
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
@@ -50,10 +77,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": true,
-        "title": "test",
-        "width": 800,
-        "height": 600
+        "resizable": false,
+        "title": "Tool",
+        "width": 1200,
+        "height": 1000
       }
     ]
   }
