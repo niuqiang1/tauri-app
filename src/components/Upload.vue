@@ -40,13 +40,16 @@ const colorLs2 = {
   交通运输: "rgba(119,236,162,0.2)",
   综合: "rgba(249,76,169,0.2)",
 };
-let active = ref(true);
+let active = ref("");
 let zhanbi = ref([]);
 let shouyi = ref([]);
 
 const keyword = ref("");
 
 let activeChart = ref("");
+
+let curmax = ref("");
+let curmin = ref("");
 
 let dataUrls = ref([]);
 
@@ -56,7 +59,7 @@ const file2 = ref(null);
 // 用户切换
 function changeMana(name) {
   active.value = name;
-  genUserChart(name);
+  genChart();
 }
 
 // 搜索用户
@@ -85,22 +88,31 @@ async function handleFileChange(type) {
 
   // Write a binary file to the `$APPDATA/avatar.png` path
 }
-async function genChart() {
+
+// 生成图像
+async function genChart(isSf = false) {
   dataUrls.value = [];
+  curmin.value = "";
+  curmax.value = "";
   const contents1 = await readBinaryFile("zb", { dir: BaseDirectory.AppCache });
   const contents2 = await readBinaryFile("sy", { dir: BaseDirectory.AppCache });
 
   const sheets = xlsx.parse(contents1);
   const sheets2 = xlsx.parse(contents2);
-  zhanbi.value = getData(sheets);
-  shouyi.value = getData(sheets2);
+  zhanbi.value = getData(sheets, isSf);
+  shouyi.value = getData(sheets2, isSf);
+
+  if (active.value) {
+    genUserChart(active.value);
+  }
 }
 
 function genUserChart(key) {
+  console.log(key, "pppp");
   activeChart.value = renderChart(zhanbi.value[key], shouyi.value[key], key).toDataURL("image/png");
 }
 
-function getData(sheets) {
+function getData(sheets, isSf) {
   console.log(sheets);
   // 表头
   const header = sheets[0].data[0].splice(3);
@@ -109,7 +121,7 @@ function getData(sheets) {
   let data = sheets[0].data.splice(1);
   const dataRow = {};
   data.map((item) => {
-    dataRow[item[1]] = sf(item.splice(3), 0, 100);
+    dataRow[item[1]] = isSf ? sf(item.splice(3), 0, 100) : item.splice(3);
     // dataRow[item[1]] = sf.sf(item.splice(3), 0, 100);
   });
 
@@ -119,6 +131,9 @@ function getData(sheets) {
 function sf(data, min, max) {
   const minV = Math.min(...data);
   const maxV = Math.max(...data);
+
+  curmin.value = minV.toFixed(2);
+  curmax.value = maxV.toFixed(2);
 
   // 区间缩放
   const output = data.map((i) => {
@@ -439,7 +454,7 @@ async function downloadImg() {
           @change="handleFileChange" /> -->
       </div>
       <div class="text-center">
-        <q-btn color="primary" @click.prevent="genChart" label="生成" />
+        <q-btn color="primary" @click.prevent="genChart()" label="生成" />
       </div>
     </form>
     <section class="row">
@@ -466,7 +481,12 @@ async function downloadImg() {
       </div>
       <div class="img-container col">
         <div v-if="activeChart">
-          <q-btn class="q-ml-xl float-right" color="amber" @click="downloadImg" label="下载" />
+          <div class="q-ml-xl float-right rr">
+            <q-btn color="amber" @click="downloadImg" label="下载" />
+            <q-btn class="q-mt-sm" color="indigo" @click="genChart()" label="固定刻度（0-100）" />
+            <q-btn class="q-mt-sm" color="light-blue" @click="genChart(true)" label="动态刻度" />
+          </div>
+
           <img width="600" :src="activeChart" alt="" />
         </div>
         <div class="empty text-orange" v-else>
@@ -478,7 +498,9 @@ async function downloadImg() {
   </div>
 </template>
 <style scoped>
-.main-card {
+.rr {
+  display: flex;
+  flex-direction: column;
 }
 form {
   background: #fff;
