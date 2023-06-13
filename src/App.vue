@@ -7,7 +7,7 @@
             <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
           </q-avatar> -->
 
-          <q-toolbar-title>可视化工具</q-toolbar-title>
+          <q-toolbar-title>展示通</q-toolbar-title>
 
           <q-btn flat round dense icon="whatshot" />
         </q-toolbar>

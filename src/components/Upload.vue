@@ -6,8 +6,10 @@ import { downloadDir } from "@tauri-apps/api/path";
 import { writeBinaryFile, BaseDirectory, readBinaryFile } from "@tauri-apps/api/fs";
 import xlsx from "node-xlsx";
 import * as echarts from "echarts";
-import { createCanvas } from "canvas";
+import { createCanvas, registerFont } from "canvas";
 import { dialog } from "@tauri-apps/api";
+
+const myFont = new FontFace("myFont", "url(../font/my.ttf)");
 
 echarts.setCanvasCreator(() => {
   return createCanvas();
@@ -15,29 +17,29 @@ echarts.setCanvasCreator(() => {
 const greetMsg = ref("");
 const name = ref("");
 const colorLs = {
-  金融地产: "rgba(180,72,191,0.8)",
-  国防军工: "rgba(111,225,48,0.8)",
-  科技TMT: "rgba(180,201,244,0.8)",
-  农林牧渔: "rgba(77,188,175,0.8)",
-  医药生物: "rgba(202,60,54,0.8)",
-  消费服务: "rgba(223,50,235,0.8)",
-  新能源: "rgba(227,231,228,0.8)",
-  资源周期: "rgba(44,212,139,0.8)",
-  高端制造: "rgba(247,8,173,0.8)",
-  交通运输: "rgba(119,236,162,0.8)",
+  金融地产: "rgba(98,98,98,0.8)",
+  国防军工: "rgba(157,72,14,0.8)",
+  科技TMT: "rgba(36,94,143,0.8)",
+  农林牧渔: "rgba(112,171,70,0.8)",
+  医药生物: "rgba(68,114,195,0.8)",
+  消费服务: "rgba(255,191,0,0.8)",
+  新能源: "rgba(163,163,163,0.8)",
+  资源周期: "rgba(235,124,48,0.8)",
+  高端制造: "rgba(255,229,151,0.8)",
+  交通运输: "rgba(195,223,179,0.8)",
   综合: "rgba(249,76,169,0.8)",
 };
 const colorLs2 = {
-  金融地产: "rgba(180,72,191,0.2)",
-  国防军工: "rgba(111,225,48,0.2)",
-  科技TMT: "rgba(180,201,244,0.2)",
-  农林牧渔: "rgba(77,188,175,0.2)",
-  医药生物: "rgba(202,60,54,0.2)",
-  消费服务: "rgba(223,50,235,0.2)",
-  新能源: "rgba(227,231,228,0.2)",
-  资源周期: "rgba(44,212,139,0.2)",
-  高端制造: "rgba(247,8,173,0.2)",
-  交通运输: "rgba(119,236,162,0.2)",
+  金融地产: "rgba(98,98,98,0.2)",
+  国防军工: "rgba(157,72,14,0.2)",
+  科技TMT: "rgba(36,94,143,0.2)",
+  农林牧渔: "rgba(112,171,70,0.2)",
+  医药生物: "rgba(68,114,195,0.2)",
+  消费服务: "rgba(255,191,0,0.2)",
+  新能源: "rgba(163,163,163,0.2)",
+  资源周期: "rgba(235,124,48,0.2)",
+  高端制造: "rgba(255,229,151,0.2)",
+  交通运输: "rgba(195,223,179,0.2)",
   综合: "rgba(249,76,169,0.2)",
 };
 let active = ref("");
@@ -121,7 +123,11 @@ function getData(sheets, isSf) {
   let data = sheets[0].data.splice(1);
   const dataRow = {};
   data.map((item) => {
-    dataRow[item[1]] = isSf ? sf(item.splice(3), 0, 100) : item.splice(3);
+    dataRow[item[1]] = {
+      data: isSf ? sf(item.splice(5), 0, 100) : item.splice(5),
+      company: item.splice(2, 1),
+      name: item[1],
+    };
     // dataRow[item[1]] = sf.sf(item.splice(3), 0, 100);
   });
 
@@ -145,7 +151,7 @@ function sf(data, min, max) {
 }
 
 function renderChart(data1, data2, name) {
-  const canvas = createCanvas(800, 800);
+  const canvas = createCanvas(1600, 1400);
   const chart = echarts.init(canvas, "");
 
   // 像正常使用一样 setOption
@@ -153,10 +159,25 @@ function renderChart(data1, data2, name) {
     animation: false,
 
     title: {
-      text: name + "测试图",
+      text: name,
+      textStyle: {
+        fontSize: 38,
+        // fontFamily: myFont,
+      },
+      subtext: data1.company,
+      subtextStyle: {
+        fontSize: 28,
+      },
     },
     legend: {
-      data: ["平均占比", "平均收益率"],
+      data: ["近五年平均配置比例", "近五年平均收益率"],
+      itemHeight: 30,
+      itemWidth: 40,
+
+      textStyle: {
+        fontSize: 32,
+        // fontFamily: "myFont",
+      },
     },
     axisLabel: {
       show: false,
@@ -172,8 +193,9 @@ function renderChart(data1, data2, name) {
       shape: "circle",
       nameGap: 20,
       splitNumber: 4,
+      radius: "65%",
       axisName: {
-        fontSize: 14,
+        fontSize: 28,
       },
       axisLine: {
         lineStyle: {
@@ -228,17 +250,26 @@ function renderChart(data1, data2, name) {
         zlevel: 0,
         labelLine: {
           show: false,
+          length: 120,
         },
         label: {
-          position: "inside",
-          rotate: true,
-          fontSize: 18,
+          fontSize: 30,
           color: "#555",
+          backgroundColor: "inherit",
+          padding: [14, 20, 14, 20],
+          overflow: "break",
         },
+        // labelLayout(params) {
+        //   return {
+        //     verticalAlign: "top",
+        //     align: "left",
+        //     height: 200,
+        //   };
+        // },
         type: "pie",
         clockwise: false,
-        radius: [50, 300],
-
+        // radius: [50, 300],
+        radius: "65%",
         data: [
           {
             value: 5,
@@ -315,6 +346,9 @@ function renderChart(data1, data2, name) {
           {
             value: 1,
             name: "交通运输",
+            label: {
+              show: false,
+            },
             itemStyle: {
               borderRadius: 0,
               color: colorLs2["交通运输"],
@@ -323,6 +357,9 @@ function renderChart(data1, data2, name) {
           {
             value: 1,
             name: "综合",
+            label: {
+              show: false,
+            },
             itemStyle: {
               borderRadius: 0,
               color: colorLs2["综合"],
@@ -332,37 +369,37 @@ function renderChart(data1, data2, name) {
       },
       {
         type: "radar",
-        color: ["#cbf156", "#56A3F1"],
+        color: ["#ffcc00", "#376db6"],
 
         data: [
           {
-            value: data1,
-            name: "平均占比",
+            value: data1.data,
+            name: "近五年平均配置比例",
             label: {},
             areaStyle: {
               color: new echarts.graphic.RadialGradient(0.1, 0.6, 1, [
                 {
-                  color: "rgba(203, 241, 86, 0.4)",
+                  color: "rgba(255,204,0, 0.3)",
                   offset: 0,
                 },
                 {
-                  color: "rgba(203, 241, 86, 0.9)",
+                  color: "rgba(255,204,0, 0.8)",
                   offset: 1,
                 },
               ]),
             },
           },
           {
-            value: data2,
-            name: "平均收益率",
+            value: data2.data,
+            name: "近五年平均收益率",
             areaStyle: {
               color: new echarts.graphic.RadialGradient(0.1, 0.6, 1, [
                 {
-                  color: "rgba(86, 163, 241, 0.4)",
+                  color: "rgba(55,109,182, 0.3)",
                   offset: 0,
                 },
                 {
-                  color: "rgba(86, 163, 241, 0.9)",
+                  color: "rgba(55,109,182, 0.8)",
                   offset: 1,
                 },
               ]),
@@ -470,7 +507,10 @@ async function downloadImg() {
               <q-item-section avatar>
                 <q-avatar color="primary" text-color="white" icon="face" />
               </q-item-section>
-              <q-item-section>{{ item }}</q-item-section>
+              <q-item-section
+                >{{ item }}
+                <span></span>
+              </q-item-section>
             </q-item>
           </q-virtual-scroll>
         </q-list>
